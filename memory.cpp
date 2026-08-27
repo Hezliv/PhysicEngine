@@ -5,47 +5,49 @@ using namespace std;
 #define ELEMENT_SIZE 255
 #define MAX_ELEMENTS 20
 
+template <typename T, typename... Args>
 class MemoryPool {
     struct PoolBlock
     {
         PoolBlock* next = nullptr;
         bool occupied = false;
-        byte memory[ELEMENT_SIZE];
+        byte memory[sizeof(T)];
     };
     PoolBlock memoryPool[MAX_ELEMENTS];
     PoolBlock* head = nullptr;
-public:
-    MemoryPool() {
-        
-        for (int i = 0; i < MAX_ELEMENTS - 1; i++)
-        {
-            memoryPool[i].next = &memoryPool[i + 1];
-        }
-        head = &memoryPool[0];
-    }
-    void* allocate(size_t size) // O(1)
-    {
-        if (size <= ELEMENT_SIZE)
-        {
-            auto t = head->memory;
-            head = head->next;
-            return t;
-        }
-        return nullptr;
-    }
 
-    void deallocate(void* p) // O(1)
+    void deallocate(T* p) // O(1)
     {
         ptrdiff_t block = static_cast<byte*>(p) - memoryPool->memory;
         size_t index = block / sizeof(PoolBlock);
-        if(index < MAX_ELEMENTS)
+        if (index < MAX_ELEMENTS)
         {
             memoryPool[index].occupied = false;
             memoryPool[index].next = head;
             head = &memoryPool[index];
         }
     }
+public:
+    MemoryPool() { 
+        for (int i = 0; i < MAX_ELEMENTS - 1; i++)
+        {
+            memoryPool[i].next = &memoryPool[i + 1];
+        }
+        head = &memoryPool[0];
+    }
+    
+    T* allocate(Args&&... args) // O(1)
+    {
+        void* mem = alocate(sizeof(T));
+        if (!mem) return nullptr;
+        return new (mem) T(std::forward<Args>(args)...); // ??????
+    }
 
+    void destroy(T* obj)
+    {
+        obj->~T();
+        deallocate(obj);
+    }
 };
 
 
