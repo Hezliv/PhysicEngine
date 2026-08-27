@@ -3,15 +3,14 @@ using namespace std;
 
 RigidBody::RigidBody(sf::Vector2f position) : position(position) {}
 
-float RigidBody::prod(sf::Vector2f position2) 
+float RigidBody::dot(sf::Vector2f position2) 
 {
 	return position.x * position2.x + position.y * position2.y;
 }
 void RigidBody::update(float time) 
-{
-	if(force.x > 0 || force.y > 0)
-		acceleration = force / mass;
-
+{	
+	acceleration = gravity + (force / mass);
+	acceleration -= velocity * airResistance;
 	velocity += acceleration * time;
 	position += velocity * time;
 }
@@ -22,6 +21,13 @@ float RigidBody::getRadius() {
 
 void RigidBody::setPosition(sf::Vector2f position) {
 	this->position = position;
+}
+
+void RigidBody::setGravity(sf::Vector2f gravity) {
+	this->gravity = gravity;
+}
+sf::Vector2f RigidBody::getGravity() {
+	return gravity;
 }
 
 void RigidBody::setRadius(float radius) {
@@ -77,23 +83,24 @@ float RigidBody::getInvMass() {
 	return invMass;
 }
 
-void RigidBody::setLinearImpulse(float impulse) {
-	this->linearImpulse = impulse;
-}
-float RigidBody::getLinearImpulse() {
-	return linearImpulse;
-}
-
-void RigidBody::setCornerImpulse(float impulse) {
-	this->cornerImpulse = impulse;
-}
-float RigidBody::getCornerImpulse() {
-	return cornerImpulse;
-}
-
 void RigidBody::setForce(sf::Vector2f force) {
 	this->force = force;
 }
 sf::Vector2f RigidBody::getForce() {
 	return force;
 }
+
+void RigidBody::setResistance(float resistance) {
+	this->airResistance = resistance;
+}
+float RigidBody::getResistance() {
+	return airResistance;
+}
+
+void RigidBody::setFriction(float friction) {
+	this->friction = friction;
+}
+float RigidBody::getFriction() {
+	return friction;
+}
+
