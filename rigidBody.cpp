@@ -39,9 +39,9 @@ void RigidBody::setRadius(float radius) {
 	box.center = { radius, radius };
 }
 
-void RigidBody::AABB() 
+RigidBody::AABB RigidBody::getAABB() 
 {
-
+	return box;
 }
 
 sf::Vector2f RigidBody::getPosition()

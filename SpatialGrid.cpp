@@ -6,6 +6,7 @@
 #include "rigidBody.h"
 using namespace std;
 
+
 class SpatialGrid {
 	struct Cell {
 		vector<RigidBody*> bodies;
@@ -18,9 +19,13 @@ class SpatialGrid {
 
 public:
 
+	float getCellSize() {
+		return cellSize;
+	}
+
 	SpatialGrid(int windowWidth, int windowHeight, int cellSize = 64.0f) : cellSize(cellSize) {
-		cols = windowWidth / cellSize;
-		rows = windowHeight / cellSize;
+		cols = static_cast<int>(windowWidth / cellSize);
+		rows = static_cast<int>(windowHeight / cellSize);
 
 		grid.resize(rows, vector<Cell>(cols));
 
@@ -59,7 +64,25 @@ public:
 
 	}
 
-	void debugRender(sf::RenderWindow* window) {
+	void refresh() {
 
+	}
+
+	void draw(sf::RenderWindow& window) {
+		sf::RectangleShape rect;
+		
+		rect.setFillColor(sf::Color::Transparent);
+		rect.setOutlineThickness(-1.0f); 
+		rect.setOutlineColor(sf::Color(100, 100, 100, 200));
+		rect.setSize({ cellSize - 5, cellSize - 5 });
+		for (int i = 0; i < rows; i++)
+		{
+			for (int j = 0; j < cols; j++)
+			{
+				sf::Vector2f pos = { j * cellSize + 5, i * cellSize + 5 };
+				rect.setPosition(pos);
+				window.draw(rect);
+			}
+		}
 	}
 };

@@ -2,17 +2,31 @@
 #include "rigidBody.h"
 #include "particle.h"
 #include<math.h>
-
 using namespace std;
+#include "SpatialGrid.cpp"
 class Engine {
 	float gravity = 900.3f;
-	unsigned int height = 600;
-	unsigned int width = 800;
+	unsigned int height;
+	unsigned width;
+	SpatialGrid* grid;
 
 	void mouseInteraction(RigidBody& body, sf::Vector2f force) {
 		addForce(body, force);
 	}
 public:
+	Engine(int width, int height, float cellSize = 64.0f) {
+		int cell = static_cast<int>(cellSize);
+		
+
+		this->width = (width / cell) * cell;
+		this->height = (height / cell) * cell;
+		grid = new SpatialGrid(width, height, cellSize);
+	}
+
+	~Engine() {
+		delete grid;
+	}
+
 	void borderCollision(RigidBody& body, double dt)
 	{
 		sf::Vector2f pos = body.getPosition();
@@ -58,6 +72,7 @@ public:
 		while (window.isOpen())
 		{
 			window.clear(sf::Color::Black);
+
 			sf::Time dt = clock.restart();
 			while (optional<sf::Event> event = window.pollEvent())
 			{
@@ -93,6 +108,11 @@ public:
 			body.update(dt.asSeconds());
 			borderCollision(body, dt.asSeconds());
 			p.getCircle()->setPosition(body.getPosition());
+
+			grid->clear();
+			grid->insert(&body);
+
+			grid->draw(window);
 			window.draw(*p.getCircle());
 			window.display();
 		}
@@ -112,6 +132,6 @@ public:
 };
 
 int main() {
-	Engine e;
+	Engine e(1000, 800);
 	e.process();
 }
