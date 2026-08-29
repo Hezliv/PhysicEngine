@@ -1,7 +1,10 @@
 #include "rigidBody.h"
 using namespace std;
 
-RigidBody::RigidBody(sf::Vector2f position) : position(position) {}
+RigidBody::RigidBody(sf::Vector2f position) : position(position) {
+	box.halfSize = { radius, radius };
+	box.center = { radius, radius };
+}
 
 float RigidBody::dot(sf::Vector2f position2) 
 {
@@ -32,6 +35,8 @@ sf::Vector2f RigidBody::getGravity() {
 
 void RigidBody::setRadius(float radius) {
 	this->radius = radius;
+	box.halfSize = { radius, radius };
+	box.center = { radius, radius };
 }
 
 void RigidBody::AABB() 

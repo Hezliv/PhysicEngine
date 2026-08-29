@@ -2,7 +2,11 @@
 #include<iostream>
 #include<SFML/Graphics.hpp>
 using namespace std;
+class Shape {
+
+};
 class RigidBody {
+	Shape* shape;
 	sf::Vector2f position = { 0.0f, 0.0f };
 	sf::Vector2f velocity = { 0.0f, 0.0f };
 	sf::Vector2f acceleration = { 0.0f, 0.0f };
@@ -14,13 +18,18 @@ class RigidBody {
 	float radius;
 	float friction = 0.4f;
 	float airResistance = 0.1f;
-
 	float dot(sf::Vector2f coords2);
+
+	struct AABB {
+		sf::Vector2f center;
+		sf::Vector2f halfSize;
+	};
+	AABB box;
 public:
 	RigidBody(sf::Vector2f position);
 
 	void update(float time);
-	void AABB();
+	AABB getAABB();
 
 	void setPosition(sf::Vector2f position);
 	sf::Vector2f getPosition();

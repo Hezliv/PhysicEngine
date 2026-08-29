@@ -98,7 +98,7 @@ public:
 		}
 	}
 
-	bool checkCollision() {
+	bool collisionDetect() {
 
 	}
 
