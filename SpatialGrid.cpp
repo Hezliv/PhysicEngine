@@ -61,19 +61,60 @@ public:
 	}
 
 	set<pair<RigidBody*, RigidBody*>> getUniquePairs() {
+		set<pair<RigidBody*, RigidBody*>> uniq;
+		for (int r = 0; r < rows; r++)
+		{
+			for (int c = 0; c < cols; c++)
+			{
+				const auto& list = grid[r][c].bodies;
+				size_t size = list.size();
+				if (size < 2) continue;
 
+				for(int i = 0; i < size; i++)
+				{
+					for (int j = i + 1; j < size; j++)
+					{
+						RigidBody* a = list[i];
+						RigidBody* b = list[j];
+						if (a > b)
+						{
+							swap(a, b);
+						}
+						uniq.insert({ a, b });
+					}
+				}
+			}
+		}
+		return uniq;
 	}
 
-	void refresh() {
-
+	void refresh(vector<RigidBody*>& bodies) {
+		clear();
+		for (int i = 0; i < bodies.size(); i++) {
+			
+			insert(bodies[i]);
+		}
+	}
+	void refresh(RigidBody* body) {
+		clear();
+		insert(body);
 	}
 
-	void draw(sf::RenderWindow& window) {
+	void draw(sf::RenderWindow& window, sf::Vector2f position,  sf::Color color = sf::Color::Green) {
 		sf::RectangleShape rect;
-		
+		rect.setFillColor(sf::Color::Transparent);
+		rect.setOutlineThickness(-1.0f);
+		rect.setOutlineColor(color);
+		rect.setSize({ cellSize - 5, cellSize - 5 });
+		rect.setPosition(position);
+		window.draw(rect);
+	}
+
+	void draw(sf::RenderWindow& window,sf::Color color = sf::Color(100, 100, 100, 200)) {
+		sf::RectangleShape rect;
 		rect.setFillColor(sf::Color::Transparent);
 		rect.setOutlineThickness(-1.0f); 
-		rect.setOutlineColor(sf::Color(100, 100, 100, 200));
+		rect.setOutlineColor(color);
 		rect.setSize({ cellSize - 5, cellSize - 5 });
 		for (int i = 0; i < rows; i++)
 		{

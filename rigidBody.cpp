@@ -6,12 +6,21 @@ RigidBody::RigidBody(sf::Vector2f position) : position(position) {
 	box.center = { radius, radius };
 }
 
-float RigidBody::dot(sf::Vector2f position2) 
-{
+float RigidBody::dot(sf::Vector2f position2) {
 	return position.x * position2.x + position.y * position2.y;
 }
-void RigidBody::update(float time) 
-{	
+
+bool RigidBody::collisionDetect(RigidBody* another) {
+	if (position.x < another->position.x + (another->radius * 2) &&
+		position.y < another->position.y + (another->radius * 2) &&
+		position.y + (radius * 2) > another->position.y) {
+		cout << "Collision\n";
+		return true;
+	}
+	return false;
+}
+
+void RigidBody::update(float time) {	
 	acceleration = gravity + (force / mass);
 	acceleration -= velocity * airResistance;
 	velocity += acceleration * time;
@@ -44,8 +53,7 @@ RigidBody::AABB RigidBody::getAABB()
 	return box;
 }
 
-sf::Vector2f RigidBody::getPosition()
-{
+sf::Vector2f RigidBody::getPosition() {
 	return position;
 }
 
