@@ -11,3 +11,4 @@ Particle::Particle(float radius, sf::Vector2f position, sf::Color color) {
 sf::CircleShape* Particle::getCircle() {
 	return circle;
 }
+

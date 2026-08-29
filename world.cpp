@@ -142,7 +142,8 @@ public:
 	}
 
 	void resolveCollision(RigidBody* a, RigidBody* b) {
-		
+		if(collisionDetect(a, b))
+			a->resolveCollision(b);
 	}
 
 	void addForce(RigidBody& body, sf::Vector2f& force) {
