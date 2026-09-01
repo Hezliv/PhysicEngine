@@ -6,7 +6,7 @@ using namespace std;
 
 class Particle 
 {
-	sf::CircleShape* circle; // нужно connect memory pool
+	sf::CircleShape* circle; // connect memory pool
 	float radius = 4.0f;
 public:
 	Particle(float radius, sf::Vector2f position, sf::Color color = sf::Color::White);

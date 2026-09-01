@@ -16,9 +16,8 @@ class MemoryPool {
     PoolBlock memoryPool[MAX_ELEMENTS];
     PoolBlock* head = nullptr;
 
-    void deallocate(T* p) // O(1)
-    {
-        ptrdiff_t block = static_cast<byte*>(p) - memoryPool->memory;
+    void deallocate(T* p) /* O(1)*/ {
+        ptrdiff_t block = reinterpret_cast<byte*>(p) - reinterpret_cast<byte*>(&memoryPool[0]);
         size_t index = block / sizeof(PoolBlock);
         if (index < MAX_ELEMENTS)
         {
@@ -26,6 +25,14 @@ class MemoryPool {
             memoryPool[index].next = head;
             head = &memoryPool[index];
         }
+    }
+
+    void* rawAllocate() {
+        if (!head) return nullptr;
+        void* mem = head;
+        head->occupied = true;
+        head = head->next;
+        return mem;
     }
 public:
     MemoryPool() { 
@@ -38,7 +45,7 @@ public:
     
     T* allocate(Args&&... args) // O(1)
     {
-        void* mem = alocate(sizeof(T));
+        void* mem = rawAllocate();
         if (!mem) return nullptr;
         return new (mem) T(std::forward<Args>(args)...); // ??????
     }
@@ -53,10 +60,10 @@ public:
 
 //int main()
 //{
-//    MemoryPool pool;
-//    void* rawMemory = pool.allocate(10);
+//    MemoryPool<int> pool;
+//    int* rawMemory = pool.allocate();
 //    if (!rawMemory) return -1;
 //    
 //
-//    pool.deallocate(rawMemory);
+//    pool.destroy(rawMemory);
 //}

@@ -140,6 +140,7 @@
     <ClCompile Include="particle.cpp" />
     <ClCompile Include="rigidBody.cpp" />
     <ClCompile Include="memory.cpp" />
+    <ClCompile Include="SpatialGrid.cpp" />
     <ClCompile Include="world.cpp" />
   </ItemGroup>
   <ItemGroup>

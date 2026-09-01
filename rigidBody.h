@@ -1,8 +1,19 @@
 #pragma once
 #include<iostream>
 #include<SFML/Graphics.hpp>
+#include<cmath>
 using namespace std;
+class Shape {
+
+};
 class RigidBody {
+	Shape* shape;
+	struct AABB {
+		sf::Vector2f center;
+		sf::Vector2f halfSize;
+	};
+	AABB box;
+
 	sf::Vector2f position = { 0.0f, 0.0f };
 	sf::Vector2f velocity = { 0.0f, 0.0f };
 	sf::Vector2f acceleration = { 0.0f, 0.0f };
@@ -20,38 +31,42 @@ public:
 	RigidBody(sf::Vector2f position);
 
 	void update(float time);
-	void AABB();
+	AABB getAABB() const;
+
+	float distance(RigidBody* another);
+	bool collisionDetect(RigidBody* another);
+	void resolveCollision(RigidBody* another);
 
 	void setPosition(sf::Vector2f position);
-	sf::Vector2f getPosition();
+	sf::Vector2f getPosition() const;
 
 	void setVelocity(sf::Vector2f velocity);
-	sf::Vector2f getVelocity();
+	sf::Vector2f getVelocity() const;
 
 	void setAcceleration(sf::Vector2f acceleration);
-	sf::Vector2f getAcceleration();
+	sf::Vector2f getAcceleration() const;
 
 	void setGravity(sf::Vector2f gravity);
-	sf::Vector2f getGravity();
+	sf::Vector2f getGravity() const;
 
 	void setForce(sf::Vector2f force);
-	sf::Vector2f getForce();
+	sf::Vector2f getForce() const;
 
 	void setMass(float mass);
-	float getMass();
+	float getMass() const;
 
 	void setInvMass(float invMass);
-	float getInvMass();
+	float getInvMass() const;
 
 	void setRestitution(float restitution);
-	float getRestitution();
+	float getRestitution() const;
 
 	void setRadius(float radius = 20.0f);
-	float getRadius();
+	float getRadius() const;
 
 	void setResistance(float resistance);
-	float getResistance();
+	float getResistance() const;
 
 	void setFriction(float friction);
-	float getFriction();
+	float getFriction() const;
 };
