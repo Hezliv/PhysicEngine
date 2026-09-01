@@ -37,36 +37,37 @@ public:
 		{
 			vel.x = -vel.x * rest;
 			vel.y *= (1.0f - body.getFriction() * dt);
-			body.setPosition({ rad, pos.y });
+			pos = { rad, pos.y };
 		}
 		if (pos.x + rad > width)
 		{
 			vel.x = -vel.x * rest; 
 			vel.y *= (1.0f - body.getFriction() * dt);
-			body.setPosition({ width - rad, pos.y });
+			pos = { width - rad, pos.y };
 		}
 		if (pos.y - rad < 0)
 		{
-			body.setPosition({ pos.x, rad });
+			pos = { pos.x, rad };
 			vel.y = -vel.y * rest;
 			vel.x *= (1.0f - body.getFriction() * dt);
 		}
 		if (pos.y + rad > height)
 		{
-			body.setPosition({ pos.x, height - rad });
+			pos = { pos.x, height - rad };
 			vel.y = -vel.y * rest;
 			vel.x *= (1.0f - body.getFriction() * dt);
 		}
 		body.setVelocity(vel);
+		body.setPosition(pos);
 	}
 
 	void process() {
 		sf::RenderWindow window(sf::VideoMode(sf::Vector2u({ width, height })), "");
-		vector<RigidBody*> bodies(10);
+		vector<RigidBody*> bodies(200);
 		for (int i = 0; i < bodies.size(); i++)	{
 			bodies[i] = new RigidBody({ (float)width / 2, i * grid->getCellSize() });
 			bodies[i]->setGravity({ 0, gravity });
-			bodies[i]->setRadius(10.0f + i);
+			bodies[i]->setRadius(20.0f);
 		}
 		//RigidBody body(sf::Vector2f({ (float)width / 2, (float)height / 2 }));
 		//body.setGravity({ 0, gravity });
@@ -116,7 +117,9 @@ public:
 			{
 				//addForce(body, { 100.0f, 0.0f });
 				bodies[i]->update(dt.asSeconds());
-				borderCollision(*bodies[i], dt.asSeconds());
+				for (auto& b : bodies) {
+					borderCollision(*b, dt.asSeconds());
+				}
 				particles[i]->getCircle()->setPosition(bodies[i]->getPosition());
 
 			}
@@ -159,3 +162,4 @@ int main() {
 	Engine e(1000, 800);
 	e.process();
 }
+

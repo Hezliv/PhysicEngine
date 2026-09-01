@@ -13,15 +13,45 @@ float RigidBody::dot(sf::Vector2f position2) {
 float RigidBody::distance(RigidBody* another) {
 	float dx = position.x - another->position.x;
 	float dy = position.y - another->position.y;
-	return sqrt(dx * dx + dy * dy); // redo without sqrt
-
+	return dx * dx + dy * dy;
 }
 
 bool RigidBody::collisionDetect(RigidBody* another) {
-	return distance(another) < radius + another->radius;
+	return distance(another) <= ((radius + another->radius) * (radius + another->radius));
 }
 
 void RigidBody::resolveCollision(RigidBody* another) {
+	float dist = distance(another);
+	float radiusSum = radius + another->radius;
+	float penetration = 0;
+	sf::Vector2f d = position - another->position;
+	sf::Vector2f normal;
+	if (dist < 0.00001f) {
+		normal = { 1.0f,0.0f };
+		penetration = radiusSum;
+	}
+	else 
+	{
+		dist = sqrt(dist);
+		normal = d / dist;
+		penetration = radiusSum - dist;
+	}
+
+	float totalInvMass = invMass + another->invMass;
+	position += normal * (penetration * (invMass / totalInvMass));
+	another->position -= normal * (penetration * (another->invMass / totalInvMass));
+
+	sf::Vector2f vRel = { velocity.x - another->velocity.x, velocity.y - another->velocity.y };
+
+	float velNormal = vRel.x * normal.x + vRel.y * normal.y ;
+	if (velNormal > 0.0f) return;
+	float e = min(restitution, another->restitution);
+	float j = -(1.0 + e) * velNormal / totalInvMass;
+
+	sf::Vector2f impulse = normal * j;
+
+	velocity += impulse * invMass;
+	another->velocity -= impulse * another->invMass;
 
 }
 
