@@ -23,7 +23,7 @@ public:
 		return cellSize;
 	}
 
-	SpatialGrid(int windowWidth, int windowHeight, int cellSize = 64.0f) : cellSize(cellSize) {
+	SpatialGrid(int windowWidth, int windowHeight, float cellSize = 64.0f) : cellSize(cellSize) {
 		cols = static_cast<int>(windowWidth / cellSize);
 		rows = static_cast<int>(windowHeight / cellSize);
 
@@ -88,6 +88,20 @@ public:
 		return uniq;
 	}
 
+	void mapBodiesToCell(sf::RenderWindow& window) {
+		for (int i = 0; i < grid.size(); i++)
+		{
+			for (int j = 0; j < grid[i].size(); j++)
+			{
+				if (grid[i][j].bodies.size() > 0)
+				{
+					drawCell(window, i, j, sf::Color::White);
+				}
+			}
+		}
+		
+	}
+
 	void refresh(vector<RigidBody*>& bodies) {
 		clear();
 		for (int i = 0; i < bodies.size(); i++) {
@@ -125,5 +139,17 @@ public:
 				window.draw(rect);
 			}
 		}
+	}
+	void drawCell(sf::RenderWindow& window, int i, int j, sf::Color color = sf::Color(100, 100, 100, 200))
+	{
+		sf::RectangleShape rect;
+		rect.setFillColor(sf::Color::Transparent);
+		rect.setOutlineThickness(-1.0f);
+		rect.setOutlineColor(color);
+		rect.setSize({ cellSize - 5, cellSize - 5 });
+
+		sf::Vector2f pos = { j * cellSize + 5, i * cellSize + 5 };
+		rect.setPosition(pos);
+		window.draw(rect);
 	}
 };

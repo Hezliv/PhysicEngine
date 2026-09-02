@@ -21,7 +21,7 @@ bool RigidBody::collisionDetect(RigidBody* another) {
 }
 
 void RigidBody::resolveCollision(RigidBody* another) {
-	float dist = distance(another);
+	float dist = sqrt(distance(another));
 	float radiusSum = radius + another->radius;
 	float penetration = 0;
 	sf::Vector2f d = position - another->position;
@@ -32,7 +32,6 @@ void RigidBody::resolveCollision(RigidBody* another) {
 	}
 	else 
 	{
-		dist = sqrt(dist);
 		normal = d / dist;
 		penetration = radiusSum - dist;
 	}
@@ -53,6 +52,28 @@ void RigidBody::resolveCollision(RigidBody* another) {
 	velocity += impulse * invMass;
 	another->velocity -= impulse * another->invMass;
 
+}
+
+void RigidBody::resolveOverlap(RigidBody* another) {
+	sf::Vector2f normal;
+	sf::Vector2f d = position - another->position;
+	float dist = sqrt(distance(another));
+	float radiusSum = radius + another->radius;
+	float penetration = 0;
+	if (dist < 0.00001f) {
+		normal = { 1.0f,0.0f };
+		penetration = radiusSum;
+	}
+	else {
+		dist = sqrt(dist);
+		normal = d / dist;
+		penetration = radiusSum - dist;
+	}
+	float totalInvMass = invMass + another->invMass;
+	float percent = 0.8f;
+	sf::Vector2f separation = normal * (penetration * percent / totalInvMass);
+	position += separation * invMass;
+	another->position -= separation * invMass;
 }
 
 void RigidBody::update(float time) {	

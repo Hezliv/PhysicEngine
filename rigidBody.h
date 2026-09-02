@@ -36,6 +36,7 @@ public:
 	float distance(RigidBody* another);
 	bool collisionDetect(RigidBody* another);
 	void resolveCollision(RigidBody* another);
+	void resolveOverlap(RigidBody* another);
 
 	void setPosition(sf::Vector2f position);
 	sf::Vector2f getPosition() const;

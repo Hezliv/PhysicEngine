@@ -17,10 +17,9 @@ public:
 	Engine(int width, int height, float cellSize = 64.0f) {
 		int cell = static_cast<int>(cellSize);
 		
-
 		this->width = (width / cell) * cell;
 		this->height = (height / cell) * cell;
-		grid = new SpatialGrid(width, height, cellSize);
+		grid = new SpatialGrid(this->width, this->height, cellSize);
 	}
 
 	~Engine() {
@@ -63,7 +62,8 @@ public:
 
 	void process() {
 		sf::RenderWindow window(sf::VideoMode(sf::Vector2u({ width, height })), "");
-		vector<RigidBody*> bodies(200);
+		window.setPosition({ 0, 0 });
+		vector<RigidBody*> bodies(100);
 		for (int i = 0; i < bodies.size(); i++)	{
 			bodies[i] = new RigidBody({ (float)width / 2, i * grid->getCellSize() });
 			bodies[i]->setGravity({ 0, gravity });
@@ -113,25 +113,30 @@ public:
 					body->setForce({ 0,0 });
 			}
 			
+			grid->refresh(bodies);
+
+			auto pairs = grid->getUniquePairs();
+
 			for (int i = 0; i < bodies.size(); i++)
 			{
 				//addForce(body, { 100.0f, 0.0f });
 				bodies[i]->update(dt.asSeconds());
-				for (auto& b : bodies) {
-					borderCollision(*b, dt.asSeconds());
+				for (auto& p : pairs) {
+					
 				}
+					for (auto& b : bodies) {
+						borderCollision(*b, dt.asSeconds());
+					}
 				particles[i]->getCircle()->setPosition(bodies[i]->getPosition());
 
 			}
-			grid->refresh(bodies);
-
-			auto pairs = grid->getUniquePairs();
 
 			for (auto& [a, b] : pairs) {
 				if (collisionDetect(a, b)) {
 					resolveCollision(a, b);
 				}
 			}
+			grid->mapBodiesToCell(window);
 
 			grid->draw(window);
 			for (auto& p : particles)
@@ -149,6 +154,10 @@ public:
 			a->resolveCollision(b);
 	}
 
+	void resolveOverlap(RigidBody* a, RigidBody* b) {
+		a->resolveOverlap(b);
+	}
+
 	void addForce(RigidBody& body, sf::Vector2f& force) {
 		body.setForce(force);
 	}
@@ -159,7 +168,7 @@ public:
 };
 
 int main() {
-	Engine e(1000, 800);
+	Engine e(1600, 1000);
 	e.process();
 }
 
