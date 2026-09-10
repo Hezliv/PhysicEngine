@@ -1,13 +1,13 @@
 #include<iostream>
 #include "rigidBody.h"
-#include "particle.h"
 #include<math.h>
 using namespace std;
 #include "SpatialGrid.cpp"
 class Engine {
 	float gravity = 900.3f;
+	size_t maxBodies = 5000;
 	unsigned int height;
-	unsigned width;
+	unsigned int width;
 	SpatialGrid* grid;
 
 	void mouseInteraction(RigidBody& body, sf::Vector2f force) {
@@ -17,10 +17,9 @@ public:
 	Engine(int width, int height, float cellSize = 64.0f) {
 		int cell = static_cast<int>(cellSize);
 		
-
 		this->width = (width / cell) * cell;
 		this->height = (height / cell) * cell;
-		grid = new SpatialGrid(width, height, cellSize);
+		grid = new SpatialGrid(this->width, this->height, maxBodies, cellSize);
 	}
 
 	~Engine() {
@@ -29,58 +28,81 @@ public:
 
 	void borderCollision(RigidBody& body, double dt) {
 		sf::Vector2f pos = body.getPosition();
-		sf::Vector2f vel = body.getVelocity();
+		sf::Vector2f old = body.getOldPosition();
+		sf::Vector2f vel = pos - old;
+
 		float rad = body.getRadius();
 		float rest = body.getRestitution();
 
 		if (pos.x - rad < 0)
 		{
+			pos.x = rad;
 			vel.x = -vel.x * rest;
-			vel.y *= (1.0f - body.getFriction() * dt);
-			pos = { rad, pos.y };
+			vel.y *= (1.0 - body.getFriction() * dt);
 		}
-		if (pos.x + rad > width)
+		else if (pos.x + rad > width)
 		{
+			pos.x = width - rad;
 			vel.x = -vel.x * rest; 
 			vel.y *= (1.0f - body.getFriction() * dt);
-			pos = { width - rad, pos.y };
 		}
 		if (pos.y - rad < 0)
 		{
-			pos = { pos.x, rad };
+			pos.y = rad;
 			vel.y = -vel.y * rest;
 			vel.x *= (1.0f - body.getFriction() * dt);
 		}
-		if (pos.y + rad > height)
+		else if (pos.y + rad > height)
 		{
-			pos = { pos.x, height - rad };
+			pos.y = height - rad;
 			vel.y = -vel.y * rest;
 			vel.x *= (1.0f - body.getFriction() * dt);
-		}
-		body.setVelocity(vel);
+		}	
+		old.x = pos.x - vel.x;
+		old.y = pos.y - vel.y;
+
 		body.setPosition(pos);
+		body.setOldPosition(old);
 	}
 
-	void process() {
-		sf::RenderWindow window(sf::VideoMode(sf::Vector2u({ width, height })), "");
-		vector<RigidBody*> bodies(200);
-		for (int i = 0; i < bodies.size(); i++)	{
-			bodies[i] = new RigidBody({ (float)width / 2, i * grid->getCellSize() });
-			bodies[i]->setGravity({ 0, gravity });
-			bodies[i]->setRadius(20.0f);
+	void process(int amountOfBodies) {
+		if (maxBodies < amountOfBodies)
+		{
+			maxBodies = amountOfBodies;
+			grid->resize(maxBodies);
 		}
-		//RigidBody body(sf::Vector2f({ (float)width / 2, (float)height / 2 }));
-		//body.setGravity({ 0, gravity });
-		//body.setRadius(20.0f);
-		vector<Particle*> particles(bodies.size());
+		sf::RenderWindow window(sf::VideoMode(sf::Vector2u({ width, height })), "");
+		window.setPosition({ 0, 0 });
+		vector<RigidBody*> bodies(amountOfBodies);
+		int colsCount = 80;
+		float spacing = 24.0f;
+		for (size_t i = 0; i < bodies.size(); i++) {
+			int col = i % colsCount;
+			int row = i / colsCount;
+
+			float x = 100.0f + col * spacing;
+			float y = 50.0f + row * spacing;
+
+			bodies[i] = new RigidBody({ x, y });
+			bodies[i]->setGravity({ 0.0f, gravity });
+			bodies[i]->setRadius(10.0f);
+		}
+
+		vector<sf::CircleShape*> particles(bodies.size());
 		for (int i = 0; i < particles.size(); i++)
 		{
-			particles[i] = new Particle(bodies[i]->getRadius(), bodies[i]->getPosition());
+			particles[i] = new sf::CircleShape();
+			particles[i]->setOrigin({ bodies[i]->getRadius(), bodies[i]->getRadius() });
+			particles[i]->setFillColor(sf::Color::Red);
+			particles[i]->setPosition(bodies[i]->getPosition());
+			particles[i]->setRadius(bodies[i]->getRadius());
 		}
-		//Particle p(body.getRadius(), body.getPosition());
+		
+		//auto vec = grid->drawGrid(window);
 		sf::Clock clock;
 		clock.start();
 		while (window.isOpen()) {
+			grid->clear();
 			window.clear(sf::Color::Black);
 
 			sf::Time dt = clock.restart();
@@ -112,41 +134,38 @@ public:
 				for(auto& body : bodies)
 					body->setForce({ 0,0 });
 			}
+
+			float dtSec = dt.asSeconds();
+			if (dtSec > 0.02f) dtSec = 0.02f;
+
+			for (auto& body : bodies) {
+				body->update(dtSec);
+			}
+			grid->refresh(bodies);
+			for(int i = 0; i < 8; i++)
+			{
+				grid->resolveCollision(bodies);
+				for (auto& body : bodies) {
+					borderCollision(*body, dtSec);
+				}
+			}
 			
 			for (int i = 0; i < bodies.size(); i++)
 			{
-				//addForce(body, { 100.0f, 0.0f });
-				bodies[i]->update(dt.asSeconds());
-				for (auto& b : bodies) {
-					borderCollision(*b, dt.asSeconds());
-				}
-				particles[i]->getCircle()->setPosition(bodies[i]->getPosition());
-
+				particles[i]->setPosition(bodies[i]->getPosition());
 			}
-			grid->refresh(bodies);
+			grid->mapBodiesToCell(window, sf::Color::White);
+			grid->drawGrid(window);
 
-			auto pairs = grid->getUniquePairs();
-
-			for (auto& [a, b] : pairs) {
-				if (collisionDetect(a, b)) {
-					resolveCollision(a, b);
-				}
-			}
-
-			grid->draw(window);
+			//window.draw(vec);
 			for (auto& p : particles)
-				window.draw(*p->getCircle());
+				window.draw(*p);
 			window.display();
 		}
 	}
 
 	bool collisionDetect(RigidBody* a, RigidBody* b) {
 		return a->collisionDetect(b);
-	}
-
-	void resolveCollision(RigidBody* a, RigidBody* b) {
-		if(collisionDetect(a, b))
-			a->resolveCollision(b);
 	}
 
 	void addForce(RigidBody& body, sf::Vector2f& force) {
@@ -159,7 +178,7 @@ public:
 };
 
 int main() {
-	Engine e(1000, 800);
-	e.process();
+	Engine e(1820, 980, 64);
+	e.process(4000);
 }
 

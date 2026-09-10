@@ -21,9 +21,6 @@
     <ClCompile Include="rigidBody.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="particle.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="world.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -33,9 +30,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="rigidBody.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="particle.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

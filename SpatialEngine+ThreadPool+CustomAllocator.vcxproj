@@ -137,14 +137,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="particle.cpp" />
     <ClCompile Include="rigidBody.cpp" />
     <ClCompile Include="memory.cpp" />
     <ClCompile Include="SpatialGrid.cpp" />
     <ClCompile Include="world.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="particle.h" />
     <ClInclude Include="rigidBody.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
