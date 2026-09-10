@@ -6,10 +6,6 @@ RigidBody::RigidBody(sf::Vector2f position) : position(position) {
 	box.center = { radius, radius };
 }
 
-float RigidBody::dot(sf::Vector2f position2) {
-	return position.x * position2.x + position.y * position2.y;
-}
-
 float RigidBody::distance(RigidBody* another) {
 	float dx = position.x - another->position.x;
 	float dy = position.y - another->position.y;
@@ -21,66 +17,55 @@ bool RigidBody::collisionDetect(RigidBody* another) {
 }
 
 void RigidBody::resolveCollision(RigidBody* another) {
-	float dist = sqrt(distance(another));
+	float dist = distance(another);
 	float radiusSum = radius + another->radius;
 	float penetration = 0;
 	sf::Vector2f d = position - another->position;
 	sf::Vector2f normal;
-	if (dist < 0.00001f) {
-		normal = { 1.0f,0.0f };
-		penetration = radiusSum;
-	}
-	else 
-	{
-		normal = d / dist;
-		penetration = radiusSum - dist;
-	}
 
+	if (dist >= radiusSum * radiusSum || dist < 0.00001f) return;
+	dist = sqrt(dist);
+
+	normal = d / dist;
+	penetration = radiusSum - dist;
+	
 	float totalInvMass = invMass + another->invMass;
-	position += normal * (penetration * (invMass / totalInvMass));
-	another->position -= normal * (penetration * (another->invMass / totalInvMass));
-
-	sf::Vector2f vRel = { velocity.x - another->velocity.x, velocity.y - another->velocity.y };
-
-	float velNormal = vRel.x * normal.x + vRel.y * normal.y ;
-	if (velNormal > 0.0f) return;
-	float e = min(restitution, another->restitution);
-	float j = -(1.0 + e) * velNormal / totalInvMass;
-
-	sf::Vector2f impulse = normal * j;
-
-	velocity += impulse * invMass;
-	another->velocity -= impulse * another->invMass;
-
-}
-
-void RigidBody::resolveOverlap(RigidBody* another) {
-	sf::Vector2f normal;
-	sf::Vector2f d = position - another->position;
-	float dist = sqrt(distance(another));
-	float radiusSum = radius + another->radius;
-	float penetration = 0;
-	if (dist < 0.00001f) {
-		normal = { 1.0f,0.0f };
-		penetration = radiusSum;
-	}
-	else {
-		dist = sqrt(dist);
-		normal = d / dist;
-		penetration = radiusSum - dist;
-	}
-	float totalInvMass = invMass + another->invMass;
-	float percent = 0.8f;
+	if (totalInvMass <= 0.0f) return;
+	float percent = 0.5f;
 	sf::Vector2f separation = normal * (penetration * percent / totalInvMass);
 	position += separation * invMass;
-	another->position -= separation * invMass;
+	another->position -= separation * another->invMass;
+
+	sf::Vector2f velocity = position - oldPosition;
+	sf::Vector2f anotherVel = another->position - another->oldPosition;
+	sf::Vector2f vRel = { velocity.x - anotherVel.x, velocity.y - anotherVel.y };
+
+	float velNormal = vRel.x * normal.x + vRel.y * normal.y ;
+	
+	sf::Vector2f dampling = normal * (velNormal * percent);
+	if (velNormal < 0.0f) {
+		sf::Vector2f damping = normal * (velNormal * 0.5f);
+		oldPosition += damping * 0.5f;
+		another->oldPosition -= damping * 0.5f;
+		return;
+	}
+
 }
 
 void RigidBody::update(float time) {	
 	acceleration = gravity + (force / mass);
-	acceleration -= velocity * airResistance;
-	velocity += acceleration * time;
-	position += velocity * time;
+	force = { 0.0f, 0.0f };
+	sf::Vector2f velocity = position - oldPosition;
+	float speedSq = velocity.x * velocity.x + velocity.y * velocity.y;
+	if (speedSq < 0.005f) { 
+		velocity = { 0.0f, 0.0f };
+	}
+	else {
+		velocity *= 0.98f; 
+	}
+	
+	oldPosition = position;
+	position += velocity + acceleration * (time * time);
 }
 
 float RigidBody::getRadius() const {
@@ -108,16 +93,16 @@ RigidBody::AABB RigidBody::getAABB()  const {
 	return box;
 }
 
+void RigidBody::setOldPosition(sf::Vector2f position) {
+	this->oldPosition = position;
+}
+sf::Vector2f RigidBody::getOldPosition() const
+{
+	return oldPosition;
+}
+
 sf::Vector2f RigidBody::getPosition() const {
 	return position;
-}
-
-void RigidBody::setVelocity(sf::Vector2f velocity) {
-	this->velocity = velocity;
-}
-
-sf::Vector2f RigidBody::getVelocity() const {
-	return velocity;
 }
 
 void RigidBody::setRestitution(float restitution) {

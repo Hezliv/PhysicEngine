@@ -13,9 +13,8 @@ class RigidBody {
 		sf::Vector2f halfSize;
 	};
 	AABB box;
-
+	sf::Vector2f oldPosition = { 0.0f, 0.0f };
 	sf::Vector2f position = { 0.0f, 0.0f };
-	sf::Vector2f velocity = { 0.0f, 0.0f };
 	sf::Vector2f acceleration = { 0.0f, 0.0f };
 	sf::Vector2f force = { 0.0f, 0.0f };
 	sf::Vector2f gravity = { 0.0f, 0.0f };
@@ -26,9 +25,11 @@ class RigidBody {
 	float friction = 0.4f;
 	float airResistance = 0.1f;
 
-	float dot(sf::Vector2f coords2);
 public:
 	RigidBody(sf::Vector2f position);
+	~RigidBody() {
+		delete shape;
+	}
 
 	void update(float time);
 	AABB getAABB() const;
@@ -36,13 +37,12 @@ public:
 	float distance(RigidBody* another);
 	bool collisionDetect(RigidBody* another);
 	void resolveCollision(RigidBody* another);
-	void resolveOverlap(RigidBody* another);
 
 	void setPosition(sf::Vector2f position);
 	sf::Vector2f getPosition() const;
 
-	void setVelocity(sf::Vector2f velocity);
-	sf::Vector2f getVelocity() const;
+	void setOldPosition(sf::Vector2f position);
+	sf::Vector2f getOldPosition() const;
 
 	void setAcceleration(sf::Vector2f acceleration);
 	sf::Vector2f getAcceleration() const;
